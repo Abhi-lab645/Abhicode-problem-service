@@ -1,8 +1,9 @@
 {
   "name": "problem-service",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Problem Service for Abhicode microservices",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
