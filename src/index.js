@@ -15,4 +15,5 @@ app.get('/ping',(req,res)=>{
 
 app.listen(PORT,()=>{
     console.log(`🚀 Server Running on Port ${PORT}`);
+
 });
