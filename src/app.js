@@ -2,9 +2,6 @@ import express from 'express';
 
 import apiRouter from './routes/index.js';
 
-import errorHandler from './utils/errorHandler.js';
-
-
 const app=express();
 
 
@@ -24,11 +21,8 @@ app.use(express.text());
 // Parse raw binary data (Buffer)
 app.use(express.raw());
 
-
+// if any request comes and route start with '/api' then send it to apiRouter 
 app.use('/api',apiRouter);
-
-
-app.use(errorHandler);
 
 
 export default app;

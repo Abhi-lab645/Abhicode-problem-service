@@ -4,7 +4,7 @@ import problemRouter from './problems.routes.js';
 
 const v1Router = express.Router();
 
-// if any request comes and route contiues  with '/problems' then send it to v1Router
+// if any request comes and route contiues  with '/problems' then send it to problemRouter
 
 v1Router.use('/problems', problemRouter);
 

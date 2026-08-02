@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
+
 import NotImplementedError from "../errors/notImplemented.error.js";
 
-import BadRequestError from "../errors/badRequest.error.js";
+
 
 
 
@@ -17,7 +18,7 @@ function addProblem(req, res, next) {
 
     try {
 
-        throw new BadRequestError('Problem Name', { missing: ['Problem Name'] })
+        throw new NotImplementedError('Add Problem');
 
     } catch (error) {
 
@@ -26,37 +27,54 @@ function addProblem(req, res, next) {
 
 }
 
-function getProblem(req, res) {
+function getProblem(req, res,next) {
 
-    return res.status(StatusCodes.NOT_IMPLEMENTED).json({
+    try {
 
-        message: 'Not implemented'
-    });
+        throw new NotImplementedError('Get Problem');
 
-}
+    } catch (error) {
 
-function getProblems(req, res) {
-
-    return res.status(StatusCodes.NOT_IMPLEMENTED).json({
-
-        message: 'Not implemented'
-    });
+        next(error);
+    }
 
 }
 
-function deleteProblem(req, res) {
+function getProblems(req, res,next) {
 
-    return res.status(StatusCodes.NOT_IMPLEMENTED).json({
+    try {
 
-        message: 'Not implemented'
-    });
+        throw new NotImplementedError('Get Problems');
+
+    } catch (error) {
+
+        next(error);
+    }
+
 }
 
-function updateProblem(req, res) {
-    return res.status(StatusCodes.NOT_IMPLEMENTED).json({
+function deleteProblem(req, res,next) {
 
-        message: 'Not implemented'
-    });
+    try {
+
+        throw new NotImplementedError('delete Problem');
+
+    } catch (error) {
+
+        next(error);
+    }
+}
+
+function updateProblem(req, res,next) {
+
+    try {
+
+        throw new NotImplementedError('update Problem');
+
+    } catch (error) {
+
+        next(error);
+    }
 }
 
 
