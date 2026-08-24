@@ -58,9 +58,19 @@ async function getProblem(req, res, next) {
 
 }
 
-function getProblems(req, res, next) {
+async function getProblems(req, res, next) {
 
     try {
+
+        const problems=await problemService.getAllProblems();
+
+        return res.status(StatusCodes.OK).json({
+
+            success:true,
+            message:'Successfully fetched all the problems',
+            err:{},
+            data:problems
+        });
 
         
 
@@ -71,7 +81,7 @@ function getProblems(req, res, next) {
 
 }
 
-function deleteProblem(req, res, next) {
+async function deleteProblem(req, res, next) {
 
     try {
 
@@ -83,7 +93,7 @@ function deleteProblem(req, res, next) {
     }
 }
 
-function updateProblem(req, res, next) {
+async function updateProblem(req, res, next) {
 
     try {
 
