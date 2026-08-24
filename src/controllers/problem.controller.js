@@ -1,9 +1,10 @@
 import { StatusCodes } from "http-status-codes";
-
 import NotImplementedError from "../errors/notImplemented.error.js";
+import {ProblemService} from '../services/index.js';
+import {ProblemRepository} from '../repositories/index.js';
 
-
-
+const problemRepository=new ProblemRepository();
+const problemService=new ProblemService(problemRepository)
 
 
 function pingProblemController(req, res) {
@@ -14,11 +15,20 @@ function pingProblemController(req, res) {
     });
 }
 
-function addProblem(req, res, next) {
+async function addProblem(req, res, next) {
 
     try {
 
-        throw new NotImplementedError('Add Problem');
+        const newProblem=await problemService.createProblem(req.body);
+
+        return res.status(StatusCodes.CREATED).json({
+
+            success:true,
+            message:`successfully created a new problem`,
+            error:{},
+            data:newProblem
+        });
+
 
     } catch (error) {
 
@@ -27,7 +37,7 @@ function addProblem(req, res, next) {
 
 }
 
-function getProblem(req, res,next) {
+function getProblem(req, res, next) {
 
     try {
 
@@ -40,11 +50,11 @@ function getProblem(req, res,next) {
 
 }
 
-function getProblems(req, res,next) {
+function getProblems(req, res, next) {
 
     try {
 
-        throw new NotImplementedError('Get Problems');
+        
 
     } catch (error) {
 
@@ -53,7 +63,7 @@ function getProblems(req, res,next) {
 
 }
 
-function deleteProblem(req, res,next) {
+function deleteProblem(req, res, next) {
 
     try {
 
@@ -65,7 +75,7 @@ function deleteProblem(req, res,next) {
     }
 }
 
-function updateProblem(req, res,next) {
+function updateProblem(req, res, next) {
 
     try {
 

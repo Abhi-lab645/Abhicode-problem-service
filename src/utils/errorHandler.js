@@ -1,4 +1,4 @@
-import BaseError from "../errors/base.error.js";
+import { BaseError } from "../errors/index.js";
 
 import { StatusCodes } from "http-status-codes";
 
