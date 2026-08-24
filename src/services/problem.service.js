@@ -74,6 +74,17 @@ class ProblemService {
 
         return problem;
     }
+
+    async updateProblem(id, updatedData) {
+        
+        if (updatedData.description) {
+            updatedData.description = sanitizeMarkdownContent(updatedData.description);
+        }
+
+        const updatedProblem = await this.problemRepository.updateProblem(id, updatedData);
+        
+        return updatedProblem;
+    }
 }
 
 export default ProblemService; 

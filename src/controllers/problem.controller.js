@@ -85,7 +85,16 @@ async function deleteProblem(req, res, next) {
 
     try {
 
-        throw new NotImplementedError('delete Problem');
+        const deletedProblem=await problemService.deleteProblem(req.params.id);
+
+        return res.status(StatusCodes.OK).json({
+
+            success:true,
+            message:'Successfully deleted the problem',
+            error:{},
+            data:deletedProblem
+  
+        });
 
     } catch (error) {
 
@@ -97,7 +106,14 @@ async function updateProblem(req, res, next) {
 
     try {
 
-        throw new NotImplementedError('update Problem');
+        const updatedProblem = await problemService.updateProblem(req.params.id, req.body);
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'Successfully updated the problem',
+            error: {},
+            data: updatedProblem
+        });
 
     } catch (error) {
 
@@ -114,3 +130,13 @@ export default {
     updateProblem,
     pingProblemController
 }
+
+
+/**
+ * 
+ * res
+ * 
+ * res.status -> returns the same response object with status property set
+ * .json -> return the same response object which has status set but this json to be returned is also set
+ * 
+ */

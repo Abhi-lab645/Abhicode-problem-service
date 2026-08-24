@@ -101,6 +101,26 @@ class ProblemRepository {
 
         }
     }
+
+    async updateProblem(id, updatedData) {
+
+        try {
+
+            const updatedProblem = await Problem.findByIdAndUpdate(id, updatedData, { returnDocument: 'after' });
+
+            if (!updatedProblem) {
+
+                throw new NotFoundError('Problem', { id });
+            }
+
+            return updatedProblem;
+
+        } catch (error) {
+
+            throw new InternalServerError(error);
+
+        }
+    }
 }
 
 export default ProblemRepository;
