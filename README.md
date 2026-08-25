@@ -10,6 +10,10 @@ A microservice for managing coding problems, built as part of the **Abhicode** p
 | ---------- | -------------------- |
 | Node.js    | Runtime              |
 | Express 5  | Web framework        |
+| MongoDB    | Database             |
+| Mongoose   | ODM                  |
+| Winston    | Logging library      |
+| winston-mongodb| DB logging transport |
 | dotenv     | Environment variables|
 | nodemon    | Development hot-reload|
 
@@ -19,26 +23,42 @@ A microservice for managing coding problems, built as part of the **Abhicode** p
 
 ```
 problem-service/
-├── .env                          # Environment variables (PORT)
+├── .env                          # Environment variables (PORT, DB URLs)
+├── app.log                       # Local logger file (pretty JSON output)
 ├── package.json                  # Project metadata & dependencies
 ├── src/
-│   ├── index.js                  # Entry point — starts the server
-│   ├── app.js                    # Express app setup & middleware configuration
+│   ├── index.js                  # Entry point — connects to DB and starts server
+│   ├── app.js                    # Express app setup, routing, & error handling
 │   ├── config/
-│   │   └── server.config.js      # Loads env variables & exports PORT
+│   │   ├── db.config.js          # MongoDB connection handler
+│   │   ├── logger.config.js      # Winston logger setup (Console, File, MongoDB)
+│   │   └── server.config.js      # Loads and exports env variables
 │   ├── controllers/
-│   │   ├── index.js              # Barrel export for all controllers
-│   │   └── problem.controller.js # Route handlers for problem operations
-│   ├── routes/
-│   │   ├── index.js              # Main API router (mounts /v1)
-│   │   └── v1/
-│   │       ├── index.js          # v1 router (mounts /problems)
-│   │       └── problems.routes.js# Problem-specific route definitions
-│   ├── models/                   # (Planned) Database models
-│   ├── repositories/             # (Planned) Data access layer
-│   ├── services/                 # (Planned) Business logic layer
-│   ├── validators/               # (Planned) Request validation
-│   └── utils/                    # (Planned) Utility/helper functions
+│   │   ├── index.js              # Barrel export for controllers
+│   │   └── problem.controller.js # Maps HTTP requests to service layer
+│   ├── errors/
+│   │   ├── base.error.js         # Base custom error class (captures stack trace)
+│   │   ├── internalServer.error.js
+│   │   ├── notFound.error.js
+│   │   └── index.js              # Barrel export for error classes
+│   ├── models/
+│   │   ├── index.js              # Barrel export for models
+│   │   └── problem.model.js      # Mongoose schema for Problems
+│   ├── repositories/
+│   │   ├── index.js              # Barrel export for repositories
+│   │   └── problem.repository.js # Database queries & operations
+│   ├── services/
+│   │   ├── index.js              # Barrel export for services
+│   │   └── problem.service.js    # Core business logic layer
+│   ├── validators/
+│   │   └── index.js              # Validation middleware
+│   ├── utils/
+│   │   └── index.js              # Formatting & helper utilities
+│   └── routes/
+│       ├── index.js              # Main API router
+│       └── v1/
+│           ├── index.js          # v1 router
+│           └── problems.routes.js# Problem-specific routes
 ```
 
 ---
@@ -47,6 +67,7 @@ problem-service/
 
 ### Prerequisites
 - **Node.js** v20+ installed
+- **MongoDB** running locally or a cloud URI
 
 ### Steps
 
@@ -58,8 +79,12 @@ cd problem-service
 # 2. Install dependencies
 npm install
 
-# 3. Create .env file (if not present)
-echo "PORT=3001" > .env
+# 3. Create .env file with MongoDB URLs
+cat <<EOT >> .env
+PORT=3001
+MONGODB_URL=mongodb://localhost:27017/Abhicode-problem-service
+MONGODB_LOGS_URL=mongodb://localhost:27017/Abhicode-logger-service
+EOT
 
 # 4. Start the server
 npm run dev      # Development mode (with hot-reload)
@@ -76,89 +101,60 @@ npm run start    # Production mode
 
 | Method | Endpoint                     | Description                   | Status      |
 | ------ | ---------------------------- | ----------------------------- | ----------- |
-| GET    | `/ping`                      | Check if service is alive     | ✅ Working  |
-| GET    | `/api/v1/problems/ping`      | Check if problem controller is up | ✅ Working  |
+| GET    | `/ping`                      | Check if service is alive     | ✅ Active   |
+| GET    | `/api/v1/problems/ping`      | Check if problem controller is up | ✅ Active   |
 
 ### Problem CRUD Operations
 
 | Method | Endpoint                     | Description                   | Status      |
 | ------ | ---------------------------- | ----------------------------- | ----------- |
-| GET    | `/api/v1/problems`           | Get all problems              | 🚧 Pending |
-| GET    | `/api/v1/problems/:id`       | Get a single problem by ID    | 🚧 Pending |
-| POST   | `/api/v1/problems`           | Create a new problem          | 🚧 Pending |
-| PUT    | `/api/v1/problems/:id`       | Update an existing problem    | 🚧 Pending |
-| DELETE | `/api/v1/problems/:id`       | Delete a problem              | 🚧 Pending |
+| GET    | `/api/v1/problems`           | Get all problems              | ✅ Active   |
+| GET    | `/api/v1/problems/:id`       | Get a single problem by ID    | ✅ Active   |
+| POST   | `/api/v1/problems`           | Create a new problem          | ✅ Active   |
+| PUT    | `/api/v1/problems/:id`       | Update an existing problem    | ✅ Active   |
+| DELETE | `/api/v1/problems/:id`       | Delete a problem              | ✅ Active   |
 
 ---
 
-## 🏗️ What's Implemented So Far
+## 🪵 Logger Setup (Winston)
 
-### ✅ Completed
-- **Express App Setup** — Configured with JSON, URL-encoded, text, and raw body parsers
-- **Environment Configuration** — `.env` file with `PORT` variable, loaded via `process.loadEnvFile()`
-- **Layered Routing Architecture**:
-  - `/api` → `apiRouter` (routes/index.js)
-  - `/api/v1` → `v1Router` (routes/v1/index.js)
-  - `/api/v1/problems` → `problemRouter` (routes/v1/problems.routes.js)
-- **Problem Controller** — Defined handler stubs for all CRUD operations (`addProblem`, `getProblem`, `getProblems`, `updateProblem`, `deleteProblem`)
-- **Health Check Endpoints** — `/ping` at root level and `/api/v1/problems/ping` at controller level
-- **ES Module Support** — Project configured with `"type": "module"` using ES `import/export` syntax
+The logger is configured globally to output clean, structured logs:
 
-### 🚧 Pending / Planned
-- **Models** — Define database schemas for problems
-- **Repositories** — Implement data access layer (DB queries)
-- **Services** — Add business logic layer between controllers and repositories
-- **Validators** — Add request body/params validation
-- **Utils** — Add helper/utility functions
-- **Database Integration** — Connect to a database (e.g., MongoDB)
-- **Error Handling** — Global error handling middleware
-- **Controller Logic** — Implement actual logic inside CRUD handler functions
+1. **Console**: Colorized terminal output with exact caller filepath and line number (`📍 at ProblemRepository.deleteProblem → repositories/problem.repository.js:85`).
+2. **MongoDB**: Stored in a separate database (`Abhicode-logger-service`) with stack traces automatically parsed into clean arrays.
+3. **Local File (`app.log`)**: Stored in pretty-printed multi-line JSON format.
 
----
-
-## 🔀 Request Flow
-
-```
-Client Request
-    │
-    ▼
-src/index.js  (Server entry point)
-    │
-    ▼
-src/app.js  (Express middleware stack)
-    │
-    ▼
-/api  →  src/routes/index.js  (API Router)
-    │
-    ▼
-/api/v1  →  src/routes/v1/index.js  (v1 Router)
-    │
-    ▼
-/api/v1/problems  →  src/routes/v1/problems.routes.js  (Problem Router)
-    │
-    ▼
-src/controllers/problem.controller.js  (Handler Functions)
+```json
+{
+  "level": "error",
+  "message": "Problem with id:6a80b1017f7ef9ac0112bd89 not found in the db",
+  "stack": [
+    "Error: Problem with id:6a80b1017f7ef9ac0112bd89 not found in the db",
+    "at ProblemRepository.deleteProblem (file:///Users/.../problem.repository.js:85:29)",
+    "at async ProblemService.deleteProblem (file:///Users/.../problem.service.js:73:23)"
+  ],
+  "timestamp": "2026-08-25 19:46:31"
+}
 ```
 
 ---
 
-## 🧪 Quick Test
+## 🏗️ Implemented Architecture
 
-After starting the server, test the health check endpoints:
+The project follows a standard **Controller-Service-Repository** pattern:
 
-```bash
-# Root-level ping
-curl http://localhost:3001/ping
-# Response: { "message": "Problem service is alive" }
-
-# Problem controller ping
-curl http://localhost:3001/api/v1/problems/ping
-# Response: { "message": "ping controller is up" }
 ```
+Client Request ──► Controller ──► Service ──► Repository ──► MongoDB
+```
+
+* **Controller**: Parses incoming request params and body.
+* **Service**: Contains business logic (validations, formatting, external calls).
+* **Repository**: Communicates directly with Mongoose models.
+* **Global Error Middleware**: Catch-all handler (`errorHandler.js`) that processes custom exceptions (`NotFoundError`, `InternalServerError`) and formats standard HTTP responses.
 
 ---
 
-## 📝 Notes
+## 📝 ESM Notes
 
 - This project uses **ES Modules** (`"type": "module"`). All imports must include the **full file path with `.js` extension** (e.g., `import x from './routes/index.js'`). Directory imports are not supported in ESM.
 - The server runs on **port 3001** by default (configurable via `.env`).
