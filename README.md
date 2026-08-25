@@ -6,16 +6,16 @@ A microservice for managing coding problems, built as part of the **Abhicode** p
 
 ## 📌 Tech Stack
 
-| Technology | Purpose              |
-| ---------- | -------------------- |
-| Node.js    | Runtime              |
-| Express 5  | Web framework        |
-| MongoDB    | Database             |
-| Mongoose   | ODM                  |
-| Winston    | Logging library      |
-| winston-mongodb| DB logging transport |
-| dotenv     | Environment variables|
-| nodemon    | Development hot-reload|
+| Technology      | Purpose                |
+| --------------- | ---------------------- |
+| Node.js         | Runtime                |
+| Express 5       | Web framework          |
+| MongoDB         | Database               |
+| Mongoose        | ODM                    |
+| Winston         | Logging library        |
+| winston-mongodb | DB logging transport   |
+| dotenv          | Environment variables  |
+| nodemon         | Development hot-reload |
 
 ---
 
@@ -66,6 +66,7 @@ problem-service/
 ## ⚙️ Setup & Installation
 
 ### Prerequisites
+
 - **Node.js** v20+ installed
 - **MongoDB** running locally or a cloud URI
 
@@ -99,20 +100,20 @@ npm run start    # Production mode
 
 ### Health Check
 
-| Method | Endpoint                     | Description                   | Status      |
-| ------ | ---------------------------- | ----------------------------- | ----------- |
-| GET    | `/ping`                      | Check if service is alive     | ✅ Active   |
-| GET    | `/api/v1/problems/ping`      | Check if problem controller is up | ✅ Active   |
+| Method | Endpoint                | Description                       | Status    |
+| ------ | ----------------------- | --------------------------------- | --------- |
+| GET    | `/ping`                 | Check if service is alive         | ✅ Active |
+| GET    | `/api/v1/problems/ping` | Check if problem controller is up | ✅ Active |
 
 ### Problem CRUD Operations
 
-| Method | Endpoint                     | Description                   | Status      |
-| ------ | ---------------------------- | ----------------------------- | ----------- |
-| GET    | `/api/v1/problems`           | Get all problems              | ✅ Active   |
-| GET    | `/api/v1/problems/:id`       | Get a single problem by ID    | ✅ Active   |
-| POST   | `/api/v1/problems`           | Create a new problem          | ✅ Active   |
-| PUT    | `/api/v1/problems/:id`       | Update an existing problem    | ✅ Active   |
-| DELETE | `/api/v1/problems/:id`       | Delete a problem              | ✅ Active   |
+| Method | Endpoint               | Description                | Status    |
+| ------ | ---------------------- | -------------------------- | --------- |
+| GET    | `/api/v1/problems`     | Get all problems           | ✅ Active |
+| GET    | `/api/v1/problems/:id` | Get a single problem by ID | ✅ Active |
+| POST   | `/api/v1/problems`     | Create a new problem       | ✅ Active |
+| PUT    | `/api/v1/problems/:id` | Update an existing problem | ✅ Active |
+| DELETE | `/api/v1/problems/:id` | Delete a problem           | ✅ Active |
 
 ---
 
@@ -147,10 +148,10 @@ The project follows a standard **Controller-Service-Repository** pattern:
 Client Request ──► Controller ──► Service ──► Repository ──► MongoDB
 ```
 
-* **Controller**: Parses incoming request params and body.
-* **Service**: Contains business logic (validations, formatting, external calls).
-* **Repository**: Communicates directly with Mongoose models.
-* **Global Error Middleware**: Catch-all handler (`errorHandler.js`) that processes custom exceptions (`NotFoundError`, `InternalServerError`) and formats standard HTTP responses.
+- **Controller**: Parses incoming request params and body.
+- **Service**: Contains business logic (validations, formatting, external calls).
+- **Repository**: Communicates directly with Mongoose models.
+- **Global Error Middleware**: Catch-all handler (`errorHandler.js`) that processes custom exceptions (`NotFoundError`, `InternalServerError`) and formats standard HTTP responses.
 
 ---
 
