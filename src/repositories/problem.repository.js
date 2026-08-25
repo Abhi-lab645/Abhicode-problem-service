@@ -1,6 +1,7 @@
 import { Problem } from "../models/index.js";
 import InternalServerError from "../errors/internalServer.error.js";
 import NotFoundError from "../errors/notFound.error.js";
+import logger from "../config/logger.config.js";
 
 class ProblemRepository {
 
@@ -22,6 +23,8 @@ class ProblemRepository {
 
         } catch (error) {
 
+            logger.error('createProblem: DB operation failed', { error });
+
             throw new InternalServerError(error);
         }
     }
@@ -35,6 +38,8 @@ class ProblemRepository {
             return problems;
 
         } catch (error) {
+
+            logger.error('getAllProblems: DB operation failed', { error });
 
             throw new InternalServerError(error);
 
@@ -59,7 +64,10 @@ class ProblemRepository {
 
         } catch (error) {
 
-            // Wraps CastError (invalid ObjectId format) or DB connection error
+            // Re-throw known errors (e.g. NotFoundError), wrap only unexpected DB errors
+            if (error instanceof NotFoundError) throw error;
+
+            logger.error('getProblem: DB operation failed', { error });
 
             throw new InternalServerError(error);
 
@@ -73,6 +81,9 @@ class ProblemRepository {
             const deletedProblem = await Problem.findByIdAndDelete(id);
 
             if (!deletedProblem) {
+
+                const err = new Error(`Problem with id:${id} not found in the db`);
+                logger.error(err);  // Winston extracts message + stack cleanly
                 // Throws NotFoundError (404) directly
 
                 throw new NotFoundError('Problem', { id });
@@ -82,20 +93,26 @@ class ProblemRepository {
 
         } catch (error) {
 
+            if (error instanceof NotFoundError) throw error;
+
+            logger.error('deleteProblem: DB operation failed', { error });
+
             throw new InternalServerError(error);
 
         }
     }
 
-    async getProblemByTitle(title){
+    async getProblemByTitle(title) {
 
-        try{
+        try {
 
-            const problem=await Problem.findOne({title});
+            const problem = await Problem.findOne({ title });
 
             return problem;
 
-        }catch(error){
+        } catch (error) {
+
+            logger.error('getProblemByTitle: DB operation failed', { error });
 
             throw new InternalServerError(error);
 
@@ -116,6 +133,10 @@ class ProblemRepository {
             return updatedProblem;
 
         } catch (error) {
+
+            if (error instanceof NotFoundError) throw error;
+
+            logger.error('updateProblem: DB operation failed', { error });
 
             throw new InternalServerError(error);
 
