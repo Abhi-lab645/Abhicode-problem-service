@@ -30,7 +30,7 @@ const startServer=async ()=>{
         app.listen(PORT,()=>{
 
             console.log("==================================");
-            console.log(`🚀 Server Running on Port ${PORT}`);
+            console.log(``);
             console.log("==================================");
 
         });
