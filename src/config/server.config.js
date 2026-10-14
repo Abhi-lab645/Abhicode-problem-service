@@ -1,12 +1,14 @@
-process.loadEnvFile();
+try {
+    process.loadEnvFile();
+} catch {
+    // In cloud/serverless environments (like Vercel), environment variables are provided directly in process.env
+}
 
+const PORT = process.env.PORT || 3001;
 
-const PORT=process.env.PORT || 3000;
+const MONGODB_URL = process.env.MONGODB_URL || process.env.ATLAS_DB_URL;
 
-const MONGODB_URL=process.env.MONGODB_URL;
-
-const MONGODB_LOGS_URL=process.env.MONGODB_LOGS_URL;
-
+const MONGODB_LOGS_URL = process.env.MONGODB_LOGS_URL || MONGODB_URL;
 
 export {
     PORT,

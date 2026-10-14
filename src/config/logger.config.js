@@ -63,88 +63,60 @@ const stackToArray = winston.format((info) => {
 
 });
 
-// 4. Console transport (colorized output in terminal)
-
-/*
+// 4. Console transport (colorized output in terminal/cloud)
 allowedTransports.push(new winston.transports.Console({
-
     format: winston.format.combine(
-
-        // Capture stack trace from Error objects
         winston.format.errors({ stack: true }),
-
-        // Convert level to uppercase
         actualFormat,
-
-        // Inject caller file + line
         callerInfo(),
-
-        // Apply color
         winston.format.colorize(),
-
-        // Add timestamp
         winston.format.timestamp({
             format: 'YYYY-MM-DD HH:mm:ss'
         }),
-
-        // Final output — shows caller location and stack if present
         winston.format.printf((log) => {
             let output = `${log.timestamp} [${log.level}] : ${log.message}`;
             if (log.caller)  output += `\n    📍 at ${log.caller}`;
-            if (log.stack)   output += `\n    🔴 Stack:\n${log.stack}`;
+            if (log.stack)   output += `\n    🔴 Stack:\n${Array.isArray(log.stack) ? log.stack.join('\n') : log.stack}`;
             return output;
         })
     )
-})
-);
-*/
-
-// 5. MongoDB transport (saves logs to Abhicode-logger-service DB)
-
-allowedTransports.push(new winston.transports.MongoDB({
-
-    db: MONGODB_LOGS_URL,        // mongodb://localhost:27017/Abhicode-logger-service
-    collection: 'logs',          // Collection name inside the DB
-    level: 'info',               // Save 'info' and above (info, warn, error)
-    storeHost: true,             // Also save the hostname
-    tryReconnect: true,          // Auto-reconnect if DB drops
-
-    options: {},
-
-    format: winston.format.combine(
-
-        // Add timestamp
-        winston.format.timestamp({
-            format: 'YYYY-MM-DD HH:mm:ss'
-        }),
-
-        // Convert stack string → array of lines for clean DB storage
-        stackToArray()
-    )
-
 }));
 
-// 6. File transport (saves logs to app.log in pretty JSON format)
+// 5. MongoDB transport (saves logs to DB if configured)
+if (MONGODB_LOGS_URL && typeof MONGODB_LOGS_URL === 'string' && MONGODB_LOGS_URL.startsWith('mongodb')) {
+    try {
+        allowedTransports.push(new winston.transports.MongoDB({
+            db: MONGODB_LOGS_URL,
+            collection: 'logs',
+            level: 'info',
+            storeHost: true,
+            tryReconnect: true,
+            options: {},
+            format: winston.format.combine(
+                winston.format.timestamp({
+                    format: 'YYYY-MM-DD HH:mm:ss'
+                }),
+                stackToArray()
+            )
+        }));
+    } catch (e) {
+        console.warn('Could not initialize MongoDB logger transport:', e.message);
+    }
+}
 
-allowedTransports.push(new winston.transports.File({
-
-    filename: 'app.log',
-
-    format: winston.format.combine(
-
-        // Inject caller file + line
-        callerInfo(),
-
-        // Add timestamp
-        winston.format.timestamp({
-            format: 'YYYY-MM-DD HH:mm:ss'
-        }),
-
-        // Pretty-print JSON (space: 2) — stack is already an array from global format
-        winston.format.json({ space: 2 })
-    )
-
-}));
+// 6. File transport (saves logs locally; skipped in serverless environments like Vercel with read-only filesystems)
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    allowedTransports.push(new winston.transports.File({
+        filename: 'app.log',
+        format: winston.format.combine(
+            callerInfo(),
+            winston.format.timestamp({
+                format: 'YYYY-MM-DD HH:mm:ss'
+            }),
+            winston.format.json({ space: 2 })
+        )
+    }));
+}
 
 const logger = winston.createLogger({
 
