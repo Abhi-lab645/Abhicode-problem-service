@@ -2,6 +2,18 @@
 
 A microservice for managing coding problems, built as part of the **Abhicode** platform.
 
+[![Production API](https://img.shields.io/badge/Production%20API-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel)](https://problem-service.vercel.app)
+[![Database](https://img.shields.io/badge/MongoDB%20Atlas-AWS%20Mumbai%20(ap--south--1)-green?style=for-the-badge&logo=mongodb)](https://cloud.mongodb.com)
+
+---
+
+## 🌐 Production Deployments
+
+- **Live Service URL:** [https://problem-service.vercel.app](https://problem-service.vercel.app)
+- **Live Healthcheck:** [https://problem-service.vercel.app/ping](https://problem-service.vercel.app/ping)
+- **Live Problems API:** [https://problem-service.vercel.app/api/v1/problems](https://problem-service.vercel.app/api/v1/problems)
+- **Production Database:** MongoDB Atlas (ReplicaSet on AWS `ap-south-1`)
+
 ---
 
 ## 📌 Tech Stack
@@ -10,10 +22,13 @@ A microservice for managing coding problems, built as part of the **Abhicode** p
 | --------------- | ---------------------- |
 | Node.js         | Runtime (v20+)         |
 | Express 5       | Web framework          |
-| MongoDB         | Database               |
+| MongoDB Atlas   | Cloud Database (AWS)   |
 | Mongoose        | ODM                    |
+| CORS            | Cross-Origin Sharing   |
+| XSS             | Safe input sanitizer   |
 | Winston         | Structured logging     |
 | winston-mongodb | DB logging transport   |
+| Vercel          | Serverless Deployment  |
 | dotenv          | Environment variables  |
 | nodemon         | Development hot-reload |
 
@@ -42,8 +57,8 @@ A microservice for managing coding problems, built as part of the **Abhicode** p
    Create a `.env` file in the root directory:
    ```env
    PORT=3001
-   ATLAS_DB_URL=mongodb://localhost:27017/abhicode_problems
-   LOG_DB_URL=mongodb://localhost:27017/abhicode_problems
+   MONGODB_URL=mongodb+srv://<username>:<password>@cluster0.e36d6zm.mongodb.net/abhicode?retryWrites=true&w=majority
+   MONGODB_LOGS_URL=mongodb+srv://<username>:<password>@cluster0.e36d6zm.mongodb.net/abhicode?retryWrites=true&w=majority
    NODE_ENV=development
    ```
 
@@ -70,17 +85,20 @@ problem-service/
 ├── .env                          # Environment variables (PORT, DB URLs)
 ├── app.log                       # Local logger file (pretty JSON output)
 ├── package.json                  # Project metadata & dependencies
+├── vercel.json                   # Vercel serverless rewrite rules
+├── api/
+│   └── index.js                  # Vercel serverless entry point with connection caching
 ├── scripts/
 │   └── migrate-problem-metadata.js # Idempotent migration to backfill problemId & topics
 ├── tests/
 │   └── problem.test.js           # Automated test suite (node:test)
 ├── src/
-│   ├── index.js                  # Entry point — connects to DB and starts server
-│   ├── app.js                    # Express app setup, routing, & error handling
+│   ├── index.js                  # Entry point — connects to DB and starts local Express server
+│   ├── app.js                    # Express app setup, CORS, routing, & error handling
 │   ├── config/
-│   │   ├── db.config.js          # MongoDB connection handler
+│   │   ├── db.config.js          # Mongoose connection pooling & caching
 │   │   ├── logger.config.js      # Winston logger setup (Console, File, MongoDB)
-│   │   └── server.config.js      # Loads and exports env variables
+│   │   └── server.config.js      # Safe env loader (process.env fallback for cloud)
 │   ├── controllers/
 │   │   ├── index.js              # Barrel export for controllers
 │   │   └── problem.controller.js # Maps HTTP requests to service layer
@@ -103,7 +121,7 @@ problem-service/
 │   │   └── index.js              # Barrel export for services
 │   ├── utils/
 │   │   ├── errorHandler.js       # Global Express error middleware
-│   │   ├── markdownSanitizer.js  # Markdown sanitization
+│   │   ├── markdownSanitizer.js  # Markdown sanitization (XSS safe)
 │   │   ├── problemHelper.js      # ProblemId formatters, regex escaping, topic validators
 │   │   └── index.js              # Barrel export for utils
 │   └── routes/
